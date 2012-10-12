@@ -4,7 +4,7 @@ import processing.video.*;
 import peasy.*;
 import toxi.geom.*;
 
-//SimpleOpenNI kinect;
+SimpleOpenNI kinect;
 PVector center;
 Movie movie;
 //Viewers viewers;
@@ -23,15 +23,15 @@ PVector tran0 = new PVector();//width/2, height/2, 530);
 PVector tran = new PVector(width/-2, height/-2, 0);
 
 void setup(){
-  size(1600,900, P3D);
-//  kinect = new SimpleOpenNI(this);
-//  kinect.enableDepth();
-//  kinect.setMirror(true);
-//  kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_NONE);
+  size(1024,760, P3D);
+  kinect = new SimpleOpenNI(this);
+  kinect.enableDepth();
+  kinect.setMirror(true);
+  kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_NONE);
   center = new PVector();
-  movie = new Movie(this, "scientists.mp4");
+  movie = new Movie(this, "scientists1.mov");
   values = new int[movie.width][movie.height];
-//  userList = new IntVector();
+  userList = new IntVector();
   curPos = 0;
   
   movie.play();
@@ -44,30 +44,35 @@ void setup(){
   cam.setMaximumDistance(camDMax);
   cameraCenter = new Vec3D();//tran.x,tran.y,tran.z);
   avg = new Vec3D();
+  frameRate(24);
   globalOffset = new Vec3D();//tran.x,tran.y,tran.z);
   tran = new PVector(width/-2 + 200, height/-2, 0);
 }
 
 void draw(){
   background(0);
-//  kinect.update();
+  kinect.update();
   translate(tran.x,tran.y,0);
-//  userList.clear();
-//  kinect.getUsers(userList);
-//  if (userList.size() > 0) {
-//    center = new PVector();
-//    for (int i = 0; i < userList.size(); i++) {
-//      int userId = userList.get(i);
-//      PVector position = new PVector();
-//      kinect.getCoM(userId, position);
-//      center.x += position.x;
-//      center.y += position.y;
-//      center.z += position.z;
-//    }
-//    center.x /= userList.size();
-//    center.y /= userList.size();
-//    center.z /= userList.size();
-//  }
+  userList.clear();
+  kinect.getUsers(userList);
+  if (userList.size() > 0) {
+    center = new PVector();
+    for (int i = 0; i < userList.size(); i++) {
+      int userId = userList.get(i);
+      PVector position = new PVector();
+      kinect.getCoM(userId, position);
+      center.x += position.x;
+      center.y += position.y;
+      center.z += position.z;
+    }
+    center.x /= userList.size();
+    center.y /= userList.size();
+    center.z /= userList.size();
+  }
+  if(abs(center.x) > 100)
+//    cam.rotateY(map(center.x, -1000, 300, PI/-6, PI/6));
+  curPos = map(center.z, 300, 2300, 0, movie.duration());
+  movie.jump(curPos);
   if (movie.available()) {
     movie.read();
   }
